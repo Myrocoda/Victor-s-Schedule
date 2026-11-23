@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weekly Schedule</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12352a">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: practical, calm — a personal run-sheet, not a clock timetable
+   IDEA: a checklist card: tick what's done, the next row lights up
+   PICTURE: today's ordered table with a big "Up next" line above it
+   COLOUR and TYPE: white ground, deep green ink, one colour per activity; Archivo + Figtree
+   LAYOUT: up next, day tabs, ordered table, week overview, modality limits */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#101412);--ink:light-dark(#141a17,#eef2ef);--mute:light-dark(#5d6862,#9aa6a0);
+--line:light-dark(#e3e8e5,#26302b);--panel:light-dark(#f3f6f4,#18201c);--board:light-dark(#12352a,#0b241c);
+--class:light-dark(#2f5fd0,#7ea2ff);--study:light-dark(#0f8a5f,#4fd3a0);--pmsr:light-dark(#8a3fbf,#c793f0);--tvn:light-dark(#c4471c,#ff8f62);--free:light-dark(#8a958f,#6c7a73)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Figtree,system-ui,sans-serif;overflow-x:clip}
+h1,h2,.big{font-family:Archivo,system-ui,sans-serif}
+.band{padding:clamp(20px,3.5vw,44px) max(5vw,16px);max-width:1100px;margin:0 auto}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.05;margin:0 0 4px;text-wrap:balance}
+h2{font-size:22px;margin:0 0 12px}
+.sub{color:var(--mute);margin:0 0 20px}
+.board{background:var(--board);color:#f2fbf6;border-radius:18px;padding:clamp(18px,3vw,30px)}
+.board .lab{font-size:14px;opacity:.75;margin:0}
+.board .big{font-size:clamp(26px,4.2vw,44px);font-weight:800;line-height:1.08;margin:6px 0}
+.board .d{font-size:16px;opacity:.85}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 14px}
+button{font:600 16px Figtree,sans-serif;min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--study);outline-offset:2px}
+.today{font-size:12px;font-weight:500;margin-left:4px;opacity:.7}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:14px;color:var(--mute);font-weight:500;padding:8px;border-bottom:1px solid var(--line)}
+td{padding:12px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n{font-family:Archivo,sans-serif;font-weight:800;font-size:18px;width:2.5em}
+td.ck{width:3em}
+td.ck input{width:24px;height:24px;accent-color:var(--study);cursor:pointer}
+td.t{white-space:nowrap;text-align:right;color:var(--mute);width:6em}
+.what{font-weight:600;display:flex;align-items:center;gap:10px}
+.what::before{content:"";width:12px;height:12px;border-radius:3px;background:var(--c);flex:none}
+.parts{color:var(--mute);font-size:15px;margin-top:2px;padding-left:22px}
+tr.done td{opacity:.45}tr.done .what{text-decoration:line-through}
+tr.next{background:var(--panel)}
+tr.next .what::after{content:"Up next";font-size:12px;font-weight:700;background:var(--study);color:var(--bg);padding:2px 8px;border-radius:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.foot{color:var(--mute);font-size:14px;margin:0}
+.week{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.wd{background:var(--panel);border-radius:12px;padding:12px 14px}
+.wd h3{margin:0 0 6px;font:800 16px Archivo,sans-serif}
+.wd.on{outline:2px solid var(--study)}
+.wd ol{margin:0;padding-left:20px;font-size:15px}
+tr.mk td{padding:6px 8px;color:var(--mute);font-size:15px;border-bottom:1px dashed var(--line)}
+.at{font:800 16px Archivo,sans-serif;color:var(--ink);white-space:nowrap;display:inline-block;min-width:5.2em}
+.mkline{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.2)}
+.wl{list-style:none;margin:0;padding:0;font-size:15px}.wl li{padding:2px 0}.wm{color:var(--mute);font-size:14px}.wm b{color:var(--ink);font-family:Archivo,sans-serif}
+.pages{position:sticky;top:0;z-index:5;display:flex;gap:8px;padding:10px max(5vw,16px);background:var(--bg);border-bottom:1px solid var(--line)}
+.todo{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.todo li{display:grid;grid-template-columns:44px minmax(0,1fr) auto 44px;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.todo input{width:24px;height:24px;accent-color:var(--study);justify-self:center}
+.todo .tl{font-weight:600}.todo .tt{color:var(--mute);font-size:14px;white-space:nowrap}
+.todo li.done .tl{text-decoration:line-through;opacity:.5}
+.x{min-height:44px;padding:0;width:44px;border-radius:50%;background:transparent;border:0;color:var(--mute);font-size:22px}
+.empty{color:var(--mute);padding:14px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:22px;background:var(--panel)}
+.chip button{border:0;background:transparent}.chip .cx{padding:0 12px 0 4px;color:var(--mute)}
+.chip small{font-weight:400;color:var(--mute);margin-left:6px}
+.add{display:grid;gap:6px;max-width:460px;margin-top:20px}
+.add label{font-size:14px;color:var(--mute)}
+.add input:not([type=checkbox]){font:16px Figtree,sans-serif;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.add .keep{display:flex;gap:8px;align-items:center;color:var(--ink);margin:4px 0}
+.add button{background:var(--ink);color:var(--bg);border-color:var(--ink);justify-self:start}
+.mods{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.mod{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.mod b{display:block}.mod span{color:var(--mute);font-size:15px}
+@media(max-width:600px){td.t{display:none}td{padding:10px 4px}}
+</style>
+</head>
+<body>
+<nav class="pages" aria-label="Pages"><button type="button" id="go-sched" data-p="sched">Schedule</button><button type="button" id="go-todo" data-p="todo">To-do</button></nav>
+<main id="pg-sched">
+<section class="band">
+  <h1>What's next</h1>
+  <p class="sub">My core activities in order for each day. The time markers are anchor points only. Everything between them is in order, not on a clock.</p>
+  <div class="board" id="board" aria-live="polite"></div>
+  <div class="tabs" id="tabs" role="group" aria-label="Choose a day"></div>
+  <table>
+    <thead><tr><th>Done</th><th>#</th><th>Activity</th><th style="text-align:right">Time</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="row"><p class="foot">Tick a row when it's done and the next one lights up. The ticks clear at the start of each day.</p><button type="button" id="reset">Clear ticks</button></div>
+</section>
+<section class="band">
+  <h2>Week overview</h2>
+  <div class="week" id="week"></div>
+  <p class="foot" style="margin-top:12px">TVN goes in the open time each day, adding up to 31 hours a week. Classes add up to 32 hours a week.</p>
+</section>
+<section class="band">
+  <h2>Modalities: maximum time whenever they come up</h2>
+  <div class="mods">
+    <div class="mod"><b>Cooking</b><span>Up to 1 hr</span></div>
+    <div class="mod"><b>Major movement</b><span>Up to 1 hr</span></div>
+    <div class="mod"><b>Freshen up</b><span>Up to 30 mins</span></div>
+    <div class="mod"><b>Washing clothes</b><span>Up to 1 hr</span></div>
+    <div class="mod"><b>Assignments</b><span>In class breaks, Mon–Thu</span></div>
+    <div class="mod"><b>Hardware with T.M.</b><span>This is the tech work / research slot on Thu and Fri</span></div>
+    <div class="mod"><b>Sleep</b><span>By 1am, wake by 6am</span></div>
+  </div>
+</section>
+</main>
+<main id="pg-todo" hidden>
+<section class="band">
+  <h1>To-do</h1>
+  <p class="sub">Tap a usual item to add it to your list. Add your own below.</p>
+  <h2>My list</h2>
+  <ul class="todo" id="todo"></ul>
+  <div class="row"><p class="foot" id="tcount"></p><button type="button" id="clearDone">Clear done</button></div>
+</section>
+<section class="band">
+  <h2>Usual items</h2>
+  <div class="chips" id="usual"></div>
+  <form id="addForm" class="add">
+    <label for="newName">Item</label><input id="newName" placeholder="e.g. Buy groceries" autocomplete="off" required>
+    <label for="newTime">Max time (optional)</label><input id="newTime" placeholder="e.g. 45 mins" autocomplete="off">
+    <label class="keep"><input type="checkbox" id="keep" checked> Save to usual items</label>
+    <button type="submit" id="addBtn">Add to list</button>
+  </form>
+</section>
+</main>
+<script>
+{
+const classes={l:"Classes",c:"class",t:"Per timetable",p:"Do assignments in the breaks"};
+const study=tech=>({l:"Study",c:"study",t:"4 hrs",p:`Class notes (2 hrs) → gap → ${tech} (1 hr) → gap`});
+const pmsr3={l:"PMSR",c:"pmsr",t:"3 hrs",p:"Reading (1 hr) → study (30 mins) → prayers (40 mins) → meditation (20 mins), with a gap"};
+const pmsr1={l:"PMSR",c:"pmsr",t:"1 hr",p:"Study (30 mins) → prayers (20 mins) → meditation (10 mins)"};
+const tvn=h=>({l:"TVN",c:"tvn",t:h+" hrs",p:"Part of 29 planned hrs/week (+2 hrs buffer for delays)"});
+const toM=s=>{const[,h,mm,ap]=s.match(/(\d+):?(\d*)(am|pm)/);let H=+h%12+(ap==="pm"?12:0);if(H<6)H+=24;return H*60+(+mm||0)};
+const M=(at,l)=>({mk:true,at,l,m:toM(at)});
+const wake=M("6am","Wake up"),sleep=M("1am","Sleep"),backClass=M("4:30pm","Back from class");
+const D={
+Mon:[wake,classes,backClass,study("tech work / research"),pmsr3,M("10pm","Off to TVN"),tvn(5)],
+Tue:[M("7am","Back from TVN"),classes,backClass,M("5pm","Off to TVN"),tvn(6),M("11pm","Back from TVN"),study("tech work / research"),sleep],
+Wed:[wake,classes,backClass,study("tech work / research"),pmsr3,sleep],
+Thu:[wake,classes,backClass,study("hardware with T.M."),pmsr3,sleep],
+Fri:[wake,pmsr3,study("hardware with T.M."),M("4pm","Off to TVN"),tvn(5),M("9:30pm","Back from TVN"),sleep],
+Sat:[wake,pmsr1,{l:"Study",c:"study",t:"4 hrs",p:"Class notes (3 hrs) → gap → tech work / research (30 mins)"},M("8:30pm","Off to TVN"),tvn(7)],
+Sun:[M("6am","Back from TVN"),pmsr1,M("1pm","Off to TVN"),tvn(6),M("8pm","Back from TVN"),{l:"Free evening",c:"free",t:"5 hrs",p:"Rest, catch up, plan the week"},sleep]
+};
+const NOTE={Mon:"Open window: 4:30pm – 10pm",Tue:"Open window: 11pm – 1am",Wed:"Free evening: 4:30pm – 1am",Thu:"Free evening: 4:30pm – 1am",Fri:"Free morning: 6am – 4pm",Sat:"Open: 6am – 8:30pm",Sun:"Free evening: 8pm – 1am"};
+const ORDER=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],ALL=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const FULL={Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday",Sat:"Saturday",Sun:"Sunday"};
+function today(){const n=new Date();let d=ALL[n.getDay()],m=n.getHours()*60+n.getMinutes();
+  const y=new Date(n);if(m<360){y.setDate(y.getDate()-1);d=ALL[y.getDay()];m+=1440}
+  return {d,m,key:y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate()}}
+const T=today();let sel=T.d,ticks={};
+try{const s=JSON.parse(localStorage.getItem("ticks")||"{}");if(s.key===T.key)ticks=s.v||{}}catch(e){}
+const save=()=>{try{localStorage.setItem("ticks",JSON.stringify({key:T.key,v:ticks}))}catch(e){}};
+const k=(d,i)=>d+i;
+function render(){
+  document.getElementById("tabs").innerHTML=ORDER.map(d=>`<button type="button" id="tab-${d}" data-d="${d}" aria-pressed="${d===sel}">${d}${d===T.d?'<span class="today">today</span>':""}</button>`).join("");
+  const list=D[sel],ni=list.findIndex((x,i)=>!x.mk&&!ticks[k(sel,i)]);
+  let n=0;
+  document.getElementById("rows").innerHTML=list.map((x,i)=>x.mk?`<tr class="mk"><td></td><td colspan="3"><span class="at">${x.at}</span>${x.l}</td></tr>`:`<tr class="${ticks[k(sel,i)]?"done":""}${i===ni?" next":""}" style="--c:var(--${x.c})"><td class="ck"><input type="checkbox" id="ck-${sel}-${i}" data-i="${i}" aria-label="Done: ${x.l}" ${ticks[k(sel,i)]?"checked":""}></td><td class="n">${++n}</td><td><div class="what">${x.l}</div><div class="parts">${x.p}</div></td><td class="t">${x.t}</td></tr>`).join("");
+  const b=document.getElementById("board"),nx=list[ni];
+  const mk=sel===T.d?list.find(x=>x.mk&&x.m>T.m):null;
+  const mkLine=mk?`<div class="d mkline">Next time marker: <b>${mk.l} · ${mk.at}</b></div>`:"";
+  b.innerHTML=(nx?`<p class="lab">${FULL[sel]} · up next</p><div class="big">${nx.l}</div><div class="d">${nx.p}</div>`
+    :`<p class="lab">${FULL[sel]}</p><div class="big">All done for the day</div><div class="d">Wind down. Sleep by 1am.</div>`)+mkLine+(NOTE[sel]?`<div class="d" style="margin-top:6px;opacity:.7">${NOTE[sel]}</div>`:"");
+  document.getElementById("week").innerHTML=ORDER.map(d=>`<div class="wd${d===T.d?" on":""}"><h3>${FULL[d]}</h3><ul class="wl">${D[d].map(x=>x.mk?`<li class="wm"><b>${x.at}</b> ${x.l}</li>`:`<li>${x.l} <span style="color:var(--mute)">· ${x.t}</span></li>`).join("")}</ul>${NOTE[d]?`<p class="foot" style="margin-top:6px">${NOTE[d]}</p>`:""}</div>`).join("");
+}
+document.getElementById("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){sel=b.dataset.d;render()}});
+document.getElementById("rows").addEventListener("change",e=>{const i=e.target.dataset.i;if(i==null)return;ticks[k(sel,i)]=e.target.checked;save();render()});
+document.getElementById("reset").addEventListener("click",()=>{ticks={};save();render()});
+render();
+const tick=()=>{const t=today();if(t.key!==T.key){ticks={};save()}Object.assign(T,t);render()};
+const clock=setInterval(tick,60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick()});
+
+const DEF=[["Cooking","1 hr"],["Major movement","1 hr"],["Freshen up","30 mins"],["Washing clothes","1 hr"],["Assignments","class breaks"],["Hardware with T.M.","tech work slot"]];
+const ld=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}};
+const st=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let mine=ld("usualMine",[]),todo=ld("todoList",[]);
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function drawTodo(){
+  const u=DEF.map(([l,t])=>({l,t,c:0})).concat(mine.map(([l,t],i)=>({l,t,c:1,i})));
+  document.getElementById("usual").innerHTML=u.map((x,j)=>`<span class="chip"><button type="button" data-add="${j}">+ ${esc(x.l)}${x.t?`<small>${esc(x.t)}</small>`:""}</button>${x.c?`<button type="button" class="cx" data-del="${x.i}" aria-label="Remove ${esc(x.l)} from usual items">×</button>`:""}</span>`).join("");
+  document.getElementById("todo").innerHTML=todo.length?todo.map((x,i)=>`<li class="${x.d?"done":""}"><input type="checkbox" id="td-${i}" data-t="${i}" ${x.d?"checked":""} aria-label="Done: ${esc(x.l)}"><label class="tl" for="td-${i}">${esc(x.l)}</label><span class="tt">${esc(x.t||"")}</span><button type="button" class="x" data-rm="${i}" aria-label="Delete ${esc(x.l)}">×</button></li>`).join(""):`<li class="empty">Nothing on your list yet.</li>`;
+  const left=todo.filter(x=>!x.d).length;document.getElementById("tcount").textContent=todo.length?`${left} of ${todo.length} left`:"";
+  return u;
+}
+let U=drawTodo();
+const saveT=()=>{st("todoList",todo);U=drawTodo()};
+document.getElementById("usual").addEventListener("click",e=>{const a=e.target.closest("[data-add]"),d=e.target.closest("[data-del]");
+  if(a){const x=U[+a.dataset.add];todo.push({l:x.l,t:x.t,d:false});saveT()}
+  if(d){mine.splice(+d.dataset.del,1);st("usualMine",mine);U=drawTodo()}});
+document.getElementById("todo").addEventListener("change",e=>{const i=e.target.dataset.t;if(i!=null){todo[i].d=e.target.checked;saveT()}});
+document.getElementById("todo").addEventListener("click",e=>{const r=e.target.closest("[data-rm]");if(r){todo.splice(+r.dataset.rm,1);saveT()}});
+document.getElementById("clearDone").addEventListener("click",()=>{todo=todo.filter(x=>!x.d);saveT()});
+document.getElementById("addForm").addEventListener("submit",e=>{e.preventDefault();const n=document.getElementById("newName"),t=document.getElementById("newTime"),l=n.value.trim(),tm=t.value.trim();if(!l)return;
+  if(document.getElementById("keep").checked&&!mine.some(m=>m[0].toLowerCase()===l.toLowerCase())){mine.push([l,tm]);st("usualMine",mine)}
+  todo.push({l,t:tm,d:false});n.value="";t.value="";saveT();n.focus()});
+function page(){const p=location.hash==="#todo"?"todo":"sched";
+  document.getElementById("pg-sched").hidden=p!=="sched";document.getElementById("pg-todo").hidden=p!=="todo";
+  for(const b of document.querySelectorAll(".pages button"))b.setAttribute("aria-pressed",b.dataset.p===p)}
+document.querySelector(".pages").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.p==="todo")location.hash="todo";else history.replaceState(null,"",location.pathname+location.search);page();window.scrollTo(0,0)});
+window.addEventListener("hashchange",page);page();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
